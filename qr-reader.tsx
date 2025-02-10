@@ -11,8 +11,31 @@ export default function QRReader() {
   const [mode, setMode] = useState<"camera" | "image" | null>(null)
   const [history, setHistory] = useState<string[]>([])
 
-  const addToHistory = (url: string) => {
+  const addToHistory = async (url: string) => {
     setHistory((prev) => [...new Set([url, ...prev])])
+
+    try {
+      const response = await fetch("/api/qr-code-history", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: url,
+          describe: "",
+          qrType: mode,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Cannot save QR code history")
+      }
+
+      const newHistory = await response.json()
+      console.log("QR history saved:", newHistory)
+    } catch (error) {
+      console.error("Error saving QR scan history:", error)
+    }
   }
 
   return (
