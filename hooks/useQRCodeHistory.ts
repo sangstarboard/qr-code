@@ -20,7 +20,7 @@ export function useQRCodeHistory(limit: number = 0) {
       const data: QRCodeHistory[] = await response.json();
 
       if (limit > 0) {
-        setQrCodeHistories(data.slice(0, limit)); // Giới hạn chỉ lấy 10 bản ghi
+        setQrCodeHistories(data.slice(0, limit));
       } else {
         setQrCodeHistories(data);
       }
@@ -33,29 +33,33 @@ export function useQRCodeHistory(limit: number = 0) {
 }
 
 export function useQRCodeHistoryWithSearch(searchQuery: string, page: number, pageSize: number) {
-    const [qrCodeHistories, setQrCodeHistories] = useState<QRCodeHistory[]>([]);
-  
-    useEffect(() => {
-      async function fetchQRCodeHistories() {
-        const response = await fetch('/api/qr-code-history');
-        const data: QRCodeHistory[] = await response.json();
-        setQrCodeHistories(data);
-      }
-      fetchQRCodeHistories();
-    }, []);
-  
-    // Lọc dữ liệu theo searchQuery
-    const filteredHistories = qrCodeHistories.filter((history) => {
-      const query = searchQuery.toLowerCase();
-      return (
-        history.url.toLowerCase().includes(query) ||
-        history.describe.toLowerCase().includes(query) ||
-        history.qrType.toLowerCase().includes(query)
-      );
-    });
-  
-    // Xử lý phân trang: giới hạn số lượng kết quả theo pageSize và page
-    const paginatedHistories = filteredHistories.slice((page - 1) * pageSize, page * pageSize);
-  
-    return { paginatedHistories, total: filteredHistories.length };
-  }
+  const [qrCodeHistories, setQrCodeHistories] = useState<QRCodeHistory[]>([]);
+
+  useEffect(() => {
+    async function fetchQRCodeHistories() {
+      const response = await fetch('/api/qr-code-history');
+      const data: QRCodeHistory[] = await response.json();
+      
+      // Sort the data by updatedAt in descending order
+      const sortedData = data.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      
+      setQrCodeHistories(sortedData);
+    }
+    fetchQRCodeHistories();
+  }, []);
+
+  // Filter the data based on the search query
+  const filteredHistories = qrCodeHistories.filter((history) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      history.url.toLowerCase().includes(query) ||
+      history.describe.toLowerCase().includes(query) ||
+      history.qrType.toLowerCase().includes(query)
+    );
+  });
+
+  // Paginate: Limit the results based on pageSize and page
+  const paginatedHistories = filteredHistories.slice((page - 1) * pageSize, page * pageSize);
+
+  return { paginatedHistories, total: filteredHistories.length };
+}

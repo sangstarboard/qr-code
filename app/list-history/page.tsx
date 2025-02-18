@@ -9,7 +9,7 @@ import { useQRCodeHistory, useQRCodeHistoryWithSearch } from "@/hooks/useQRCodeH
 export default function ListHistory() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 1;
+  const pageSize = 10;
 
   const { paginatedHistories, total } = useQRCodeHistoryWithSearch(searchQuery, currentPage, pageSize);
 
@@ -21,69 +21,111 @@ export default function ListHistory() {
   };
 
   return (
-    <div className="flex flex-col items-center mt-4">
-      <input
-        type="text"
-        placeholder="Search..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="w-full max-w-md p-2 mb-4 border rounded-md"
-      />
+    <div className="flex flex-col items-center mt-4 px-4 sm:px-8 lg:px-16">
+      {/* Search Input */}
+      <div className="w-full max-w-full mb-6">
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+          style={{ fontSize: '16px' }}
+        />
+      </div>
 
-      <Table className="w-full max-w-4xl table-auto mx-auto border border-gray-300 rounded-lg">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="text-center border border-gray-300 font-bold">No.</TableHead>
-            <TableHead className="text-left border border-gray-300 font-bold">URL</TableHead>
-            <TableHead className="text-center border border-gray-300 font-bold">Loại QR</TableHead>
-            <TableHead className="text-center border border-gray-300 font-bold">Số lần quét</TableHead>
-            <TableHead className="text-center border border-gray-300 font-bold">Thời gian quét</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedHistories.map((history, index) => (
-            <TableRow key={history.id}>
-              <TableCell className="text-center border border-gray-300">{index + 1 + (currentPage - 1) * pageSize}</TableCell>
-              <TableCell className="text-left border border-gray-300">
-              <a href={history.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                {history.url}
-              </a>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300">{history.qrType}</TableCell>
-              <TableCell className="text-center border border-gray-300">{history.scanCount}</TableCell>
-              <TableCell className="text-center border border-gray-300">{new Date(history.updatedAt).toLocaleString()}</TableCell>
+      {/* Table */}
+      <div className="w-full max-w-full overflow-x-auto">
+        <Table className="table-auto w-full mx-auto border border-gray-300 rounded-lg shadow-lg table-fixed">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-center border border-gray-300 font-bold bg-blue-200 text-gray-800 p-4 text-base">
+                No.
+              </TableHead>
+              <TableHead className="text-left border border-gray-300 font-bold bg-blue-200 text-gray-800 p-4 text-base">
+                URL
+              </TableHead>
+              <TableHead className="text-center border border-gray-300 font-bold bg-blue-200 text-gray-800 p-4 text-base">
+                Loại QR
+              </TableHead>
+              <TableHead className="text-center border border-gray-300 font-bold bg-blue-200 text-gray-800 p-4 text-base">
+                Số lần quét
+              </TableHead>
+              <TableHead className="text-center border border-gray-300 font-bold bg-blue-200 text-gray-800 p-4 text-base">
+                Thời gian quét
+              </TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {paginatedHistories.map((history, index) => (
+              <TableRow key={history.id} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                <TableCell className="text-center border border-gray-300 p-3 text-base">
+                  {index + 1 + (currentPage - 1) * pageSize}
+                </TableCell>
+                <TableCell className="text-left border border-gray-300 p-3 text-base max-w-[200px] sm:max-w-[250px] md:max-w-none truncate">
+                  <a href={history.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    {history.url}
+                  </a>
+                </TableCell>
+                <TableCell className="text-center border border-gray-300 p-3 text-base">
+                  {history.qrType}
+                </TableCell>
+                <TableCell className="text-center border border-gray-300 p-3 text-base">
+                  {history.scanCount}
+                </TableCell>
+                <TableCell className="text-center border border-gray-300 p-3 text-base max-w-[250px] sm:max-w-[300px] md:max-w-none truncate">
+                  {new Date(history.updatedAt).toLocaleString()}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
+    
       {/* Pagination */}
-      <Pagination className="mt-4">
-        <PaginationContent>
-          {/* Previous Page Button */}
-          <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-          
-          {/* Pagination Links */}
-          {Array.from({ length: totalPages }, (_, index) => {
-            const page = index + 1
-            return (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  isActive={currentPage === page}
-                  onClick={() => handlePageChange(page)}
-                >
-                  {page}
-                </PaginationLink>
-              </PaginationItem>
-            )
-          })}
-
-          {/* Next Page Button */}
-          <PaginationNext onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
-        </PaginationContent>
-      </Pagination>
-
-      <Button className="mt-4" onClick={() => window.history.back()}>Back</Button>
+      <div className="mt-6 flex justify-center w-full">
+        <Pagination className="flex space-x-2 items-center">
+          <PaginationContent>
+            {/* Previous Page Button */}
+            <PaginationPrevious
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-blue-300 text-white rounded-md disabled:opacity-50 hover:bg-blue-400 cursor-pointer transition duration-300"
+            />
+    
+            {/* Pagination Links */}
+            {Array.from({ length: totalPages }, (_, index) => {
+              const page = index + 1;
+              return (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    isActive={currentPage === page}
+                    onClick={() => handlePageChange(page)}
+                    className="px-4 py-2 bg-blue-300 text-white rounded-md hover:bg-blue-400 cursor-pointer transition duration-300"
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              );
+            })}
+    
+            {/* Next Page Button */}
+            <PaginationNext
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 bg-blue-300 text-white rounded-md disabled:opacity-50 hover:bg-blue-400 cursor-pointer transition duration-300"
+            />
+          </PaginationContent>
+        </Pagination>
+      </div>
+    
+      {/* Back Button */}
+      <div className="mt-6">
+        <Button className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700" onClick={() => window.history.back()}>
+          Back
+        </Button>
+      </div>
     </div>
   )
 }

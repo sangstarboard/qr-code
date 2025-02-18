@@ -24,14 +24,11 @@ export async function GET() {
   export async function POST(request: Request) {
     try {
       const { url, describe, qrType } = await request.json();
-  
-      // Tìm kiếm mã QR theo URL và qrType
       const existingQRCode = await prisma.qRCodeHistory.findFirst({
         where: { url, qrType },
       });
   
       if (existingQRCode) {
-        // Nếu bản ghi đã tồn tại, tăng scanCount
         const updatedQRCode = await prisma.qRCodeHistory.update({
           where: { id: existingQRCode.id },
           data: {
@@ -47,7 +44,6 @@ export async function GET() {
           }
         );
       } else {
-        // Nếu bản ghi chưa tồn tại, tạo mới
         const newHistory = await prisma.qRCodeHistory.create({
           data: {
             url,
